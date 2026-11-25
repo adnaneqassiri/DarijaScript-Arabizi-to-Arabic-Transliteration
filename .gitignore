@@ -1,1 +1,8 @@
-.vscode
+.vscode/
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.ipynb_checkpoints/
+.pytest_cache/
+data/processed/doda_train_clean.csv

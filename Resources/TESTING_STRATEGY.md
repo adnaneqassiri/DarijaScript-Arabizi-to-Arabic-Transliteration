@@ -42,3 +42,51 @@ Treat small subgroup results cautiously and report group sizes. Do not use test 
 - [ ] Saved predictions cover every test ID exactly once.
 - [ ] Model/run ID, configuration, random seed, and decoding method are recorded.
 - [ ] Scores include example counts and can be regenerated from saved predictions.
+
+## Running the standard metrics
+
+In a notebook, score a pandas DataFrame directly. If the notebook's working
+directory is `notebooks/`, add the project root to the import path first:
+
+```python
+import sys
+from pathlib import Path
+
+project_root = Path.cwd()
+if project_root.name == "notebooks":
+    project_root = project_root.parent
+sys.path.insert(0, str(project_root))
+
+from scripts.metrics import evaluate_dataframe
+
+# df contains the existing Arabic references and your model's predictions.
+scores = evaluate_dataframe(df, reference_col="Darija_arabic", prediction_col="prediction")
+print(scores)
+```
+
+The default column names are `reference` and `prediction`. The function returns
+a dictionary of scores and counts, leaves the DataFrame unchanged, and rejects
+missing or non-string values instead of silently excluding examples. Check IDs
+and ordering against the split when preparing the DataFrame.
+
+For reproducible saved results, you can also use the command-line interface:
+
+Save a UTF-8 CSV with the columns `example_id`, `reference`, `prediction`,
+`model_id`, and `run_id`. Each row must represent one example, and each file
+must contain one model and run. Keep reference and prediction text raw in the
+file; the scorer applies NFC and collapses whitespace to both. Alternative
+spellings are counted as errors unless they match after this normalization.
+
+Run the scorer from the project root, passing the relevant split to verify
+that prediction IDs are complete, unique, and in the original order:
+
+```bash
+python scripts/metrics.py predictions.csv --expected-ids data/processed/test.csv
+```
+
+The JSON output contains the three scores, example count, and the underlying
+error and reference counts. CER or WER is `null` when its total reference
+length is zero. An empty dataset is rejected. The optional split check verifies
+IDs and order; ensure that the saved references also correspond to that split.
+For validation, use the validation split instead of the test split. The same
+implementation can be imported using `from scripts.metrics import calculate_metrics`.

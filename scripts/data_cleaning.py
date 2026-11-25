@@ -8,7 +8,7 @@ from pathlib import Path
 import pandas as pd
 
 COLUMNS = ["Darija_latin", "Darija_arabic"]
-PROJECT_DIR = Path(__file__).resolve().parent
+PROJECT_DIR = Path(__file__).resolve().parent.parent
 
 
 def normalize_text(text: str) -> str:
